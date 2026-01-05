@@ -1,3 +1,5 @@
+---
+
 ````markdown
 # ❄️ Cold-Call-AI
 
@@ -103,4 +105,7 @@ This project is open source and MIT licensed.
 
 Reach out in the community or open an issue — happy to help!
 
-[1]: https://github.com/banesullivan/README?utm_source=chatgpt.com "How to write a good README"
+```
+
+---
+
