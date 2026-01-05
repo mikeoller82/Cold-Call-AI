@@ -1,7 +1,3 @@
-Here’s a **professional, clear, and helpful `README.md`** you can use for your **Cold-Call-AI** repo on GitHub. It follows best practices for open source README files — explaining what the project is, how to set it up, how to use it, and how people can contribute. ([GitHub][1])
-
----
-
 ````markdown
 # ❄️ Cold-Call-AI
 
