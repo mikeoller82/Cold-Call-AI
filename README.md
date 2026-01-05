@@ -1,6 +1,3 @@
----
-
-````markdown
 # ❄️ Cold-Call-AI
 
 **Generate personalized, high-converting cold call scripts using AI.**
@@ -39,70 +36,41 @@ Make sure you have:
 ```bash
 git clone https://github.com/mikeoller82/Cold-Call-AI.git
 cd Cold-Call-AI
-````
-
----
-
-### 3. **Install Dependencies**
-
-```bash
+3. Install Dependencies
+bash
+Copy code
 npm install
-```
+4. Configure Your API Key
+Create a .env.local file in the root of the project and add:
 
----
-
-### 4. **Configure Your API Key**
-
-Create a `.env.local` file in the root of the project and add:
-
-```env
+env
+Copy code
 GEMINI_API_KEY=YOUR_GOOGLE_API_KEY_HERE
-```
+You can get a free API key from Google AI Studio — they give you plenty of free usage for this app unless you intentionally push it beyond normal use.
 
-> You can get a free API key from **Google AI Studio** — they give you plenty of free usage for this app unless you intentionally push it beyond normal use.
-
----
-
-### 5. **Run Locally**
-
-```bash
+5. Run Locally
+bash
+Copy code
 npm run dev
-```
-
 Once it’s running, open the app in your browser and start generating scripts.
 
----
+📝 Example Usage
+Enter a company or product name + context, and the AI will return a ready-to-use cold call script tailored to your needs.
 
-## 📝 Example Usage
-
-Enter a company or product name + context, and the AI will return a *ready-to-use cold call script* tailored to your needs.
-
----
-
-## 💡 Why This Is Useful
-
+💡 Why This Is Useful
 Cold calling can be time-consuming and repetitive. With this app, you:
 
 ✔️ Speed up outreach prep
 ✔️ Improve message quality
-✔️ Get scripts you *actually want to use*
+✔️ Get scripts you actually want to use
 
----
-
-## 🤝 Contributing
-
+🤝 Contributing
 Want to improve the project? Open an issue or send a pull request! Suggestions and contributions are welcome.
 
----
-
-## 📜 License
-
+📜 License
 This project is open source and MIT licensed.
 
----
-
-## 📫 Questions or Feedback?
-
+📫 Questions or Feedback?
 Reach out in the community or open an issue — happy to help!
 
 ```
