@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { ScriptAnalysisResult } from '../types';
 import { analyzeScript } from '../services/geminiService';
-import { LoadingSpinner } from './Icons';
+import { LoadingSpinner, SparklesIcon } from './Icons';
 
 interface ScriptAnalysisProps {
   scriptContent: string;
+  onImprove: (suggestions: string[]) => void;
 }
 
 const ProgressBar: React.FC<{ label: string; score: number; color: string }> = ({ label, score, color }) => (
@@ -22,7 +23,7 @@ const ProgressBar: React.FC<{ label: string; score: number; color: string }> = (
   </div>
 );
 
-const ScriptAnalysis: React.FC<ScriptAnalysisProps> = ({ scriptContent }) => {
+const ScriptAnalysis: React.FC<ScriptAnalysisProps> = ({ scriptContent, onImprove }) => {
   const [analysis, setAnalysis] = useState<ScriptAnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -93,10 +94,10 @@ const ScriptAnalysis: React.FC<ScriptAnalysisProps> = ({ scriptContent }) => {
         </div>
       </div>
 
-      {/* Actionable Suggestions */}
+      {/* Actionable Suggestions & Regenerate */}
       <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-5">
         <h4 className="font-semibold text-indigo-900 mb-3">💡 Optimization Suggestions</h4>
-        <div className="space-y-3">
+        <div className="space-y-3 mb-6">
           {analysis.suggestions.map((tip, i) => (
             <div key={i} className="flex items-start">
               <span className="flex-shrink-0 bg-indigo-200 text-indigo-700 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mt-0.5 mr-3">
@@ -106,6 +107,14 @@ const ScriptAnalysis: React.FC<ScriptAnalysisProps> = ({ scriptContent }) => {
             </div>
           ))}
         </div>
+        
+        <button
+          onClick={() => onImprove(analysis.suggestions)}
+          className="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+        >
+          <SparklesIcon className="h-5 w-5 mr-2" />
+          Apply Suggestions & Regenerate Script
+        </button>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { CopyIcon, DownloadIcon, RefreshIcon, InfoIcon } from './Icons';
+import React, { useState, useEffect } from 'react';
+import { CopyIcon, DownloadIcon, RefreshIcon, InfoIcon, DocumentTextIcon, ChartBarIcon, ChatBubbleLeftRightIcon } from './Icons';
 import { GeneratedScript, ScriptFormData } from '../types';
 import ScriptRenderer from './ScriptRenderer';
 import ScriptAnalysis from './ScriptAnalysis';
@@ -9,14 +9,22 @@ interface ScriptDisplayProps {
   scriptData: GeneratedScript | null;
   formData: ScriptFormData;
   onRegenerate: () => void;
+  onImprove: (suggestions: string[]) => void;
   isLoading: boolean;
 }
 
 type Tab = 'script' | 'analysis' | 'practice';
 
-const ScriptDisplay: React.FC<ScriptDisplayProps> = ({ scriptData, formData, onRegenerate, isLoading }) => {
+const ScriptDisplay: React.FC<ScriptDisplayProps> = ({ scriptData, formData, onRegenerate, onImprove, isLoading }) => {
   const [activeTab, setActiveTab] = useState<Tab>('script');
   const [copySuccess, setCopySuccess] = useState(false);
+
+  // Auto-switch to script tab when new data arrives
+  useEffect(() => {
+    if (scriptData) {
+      setActiveTab('script');
+    }
+  }, [scriptData?.timestamp]);
 
   const handleCopy = async () => {
     if (scriptData?.content) {
@@ -56,29 +64,32 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({ scriptData, formData, onR
   return (
     <div className="bg-white rounded-lg shadow-lg border border-gray-100 flex flex-col h-full min-h-[600px] overflow-hidden">
       {/* Header with Tabs */}
-      <div className="bg-gray-50 border-b border-gray-200">
-        <div className="px-6 py-4 flex justify-between items-center flex-wrap gap-2">
-          <h3 className="text-lg font-semibold text-gray-900 hidden md:block">Generated Script</h3>
+      <div className="bg-white border-b border-gray-200">
+        <div className="px-6 py-4 flex justify-between items-center flex-wrap gap-2 bg-gray-50/50">
+          <h3 className="text-lg font-semibold text-gray-900 hidden md:block flex items-center gap-2">
+            <span className="w-2 h-6 bg-indigo-500 rounded-sm"></span>
+            Generated Script
+          </h3>
           
           <div className="flex space-x-2">
              <button
               onClick={handleCopy}
               disabled={isLoading || activeTab !== 'script'}
-              className={`inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${isLoading || activeTab !== 'script' ? 'opacity-50 cursor-not-allowed hidden' : ''}`}
+              className={`inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors ${isLoading || activeTab !== 'script' ? 'opacity-50 cursor-not-allowed hidden' : ''}`}
             >
-              {copySuccess ? <span className="text-green-600">Copied!</span> : <><CopyIcon className="h-4 w-4 mr-1.5" /> Copy</>}
+              {copySuccess ? <span className="text-green-600 flex items-center">Copied!</span> : <><CopyIcon className="h-4 w-4 mr-1.5 text-gray-500" /> Copy</>}
             </button>
             <button
               onClick={handleDownload}
               disabled={isLoading || activeTab !== 'script'}
-              className={`inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${isLoading || activeTab !== 'script' ? 'opacity-50 cursor-not-allowed hidden' : ''}`}
+              className={`inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors ${isLoading || activeTab !== 'script' ? 'opacity-50 cursor-not-allowed hidden' : ''}`}
             >
-              <DownloadIcon className="h-4 w-4 mr-1.5" /> Download
+              <DownloadIcon className="h-4 w-4 mr-1.5 text-gray-500" /> Download
             </button>
             <button
               onClick={onRegenerate}
               disabled={isLoading}
-              className={`inline-flex items-center px-3 py-1.5 border border-transparent shadow-sm text-sm font-medium rounded text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`inline-flex items-center px-3 py-1.5 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <RefreshIcon className={`h-4 w-4 mr-1.5 ${isLoading ? 'animate-spin' : ''}`} />
               Regenerate
@@ -86,36 +97,39 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({ scriptData, formData, onR
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex border-t border-gray-200">
+        {/* Navigation Tabs - Professional Segmented Style */}
+        <div className="flex border-t border-gray-200 bg-gray-50">
           <button
             onClick={() => setActiveTab('script')}
-            className={`flex-1 py-3 text-sm font-medium text-center border-b-2 transition-colors ${
+            className={`flex-1 py-3 text-sm font-medium text-center border-b-2 transition-all flex items-center justify-center gap-2 ${
               activeTab === 'script'
-                ? 'border-indigo-600 text-indigo-600 bg-white'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                ? 'border-indigo-600 text-indigo-700 bg-white shadow-sm'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
             }`}
           >
+            <DocumentTextIcon className={`h-5 w-5 ${activeTab === 'script' ? 'text-indigo-600' : 'text-gray-400'}`} />
             Script Output
           </button>
           <button
             onClick={() => setActiveTab('analysis')}
-            className={`flex-1 py-3 text-sm font-medium text-center border-b-2 transition-colors ${
+            className={`flex-1 py-3 text-sm font-medium text-center border-b-2 transition-all flex items-center justify-center gap-2 ${
               activeTab === 'analysis'
-                ? 'border-indigo-600 text-indigo-600 bg-white'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                ? 'border-indigo-600 text-indigo-700 bg-white shadow-sm'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
             }`}
           >
+            <ChartBarIcon className={`h-5 w-5 ${activeTab === 'analysis' ? 'text-indigo-600' : 'text-gray-400'}`} />
             AI Analysis
           </button>
           <button
             onClick={() => setActiveTab('practice')}
-            className={`flex-1 py-3 text-sm font-medium text-center border-b-2 transition-colors ${
+            className={`flex-1 py-3 text-sm font-medium text-center border-b-2 transition-all flex items-center justify-center gap-2 ${
               activeTab === 'practice'
-                ? 'border-indigo-600 text-indigo-600 bg-white'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                ? 'border-indigo-600 text-indigo-700 bg-white shadow-sm'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
             }`}
           >
+            <ChatBubbleLeftRightIcon className={`h-5 w-5 ${activeTab === 'practice' ? 'text-indigo-600' : 'text-gray-400'}`} />
             Practice Roleplay
           </button>
         </div>
@@ -139,7 +153,10 @@ const ScriptDisplay: React.FC<ScriptDisplayProps> = ({ scriptData, formData, onR
 
         {activeTab === 'analysis' && scriptData && (
           <div className="min-h-full bg-white">
-            <ScriptAnalysis scriptContent={scriptData.content} />
+            <ScriptAnalysis 
+              scriptContent={scriptData.content} 
+              onImprove={onImprove}
+            />
           </div>
         )}
 

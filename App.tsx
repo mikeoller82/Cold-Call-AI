@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ScriptFormData, GeneratedScript } from './types';
 import { INITIAL_FORM_DATA } from './constants';
-import { generateScript } from './services/geminiService';
+import { generateScript, improveScript } from './services/geminiService';
 import InputForm from './components/InputForm';
 import ScriptDisplay from './components/ScriptDisplay';
 import { PhoneIcon, LightbulbIcon } from './components/Icons';
@@ -65,6 +65,25 @@ const App: React.FC = () => {
     }
   };
 
+  const handleImprove = async (suggestions: string[]) => {
+    if (!scriptData) return;
+    
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const content = await improveScript(formData, scriptData.content, suggestions);
+      setScriptData({
+        content,
+        timestamp: new Date().toISOString()
+      });
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred while improving the script.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Navbar */}
@@ -122,6 +141,7 @@ const App: React.FC = () => {
                 scriptData={scriptData}
                 formData={formData}
                 onRegenerate={handleGenerate}
+                onImprove={handleImprove}
                 isLoading={isLoading}
               />
             </div>
@@ -151,11 +171,8 @@ const App: React.FC = () => {
              </div>
              <div className="bg-gray-50 p-4 rounded-lg">
                 <strong className="block text-gray-900 mb-1">Handle Objections</strong>
-                Acknowledge, empathize, and pivot. Never argue. "I understand" is your best friend.
+                Acknowledge, empathize, then loop back to value. Never argue or get defensive.
              </div>
-          </div>
-          <div className="mt-8 text-center text-xs text-gray-400">
-            &copy; {new Date().getFullYear()} ColdCall AI. Powered by Google Gemini.
           </div>
         </div>
       </footer>
