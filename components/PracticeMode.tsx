@@ -79,7 +79,7 @@ const PracticeMode: React.FC<PracticeModeProps> = ({ formData }) => {
       <div className="bg-white border-b px-4 py-3 flex justify-between items-center shadow-sm z-10">
         <div>
           <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Speaking To</span>
-          <div className="font-semibold text-gray-900">{formData.targetRole} @ {formData.companyName || "Target Co."}</div>
+          <div className="font-semibold text-gray-900">{formData.targetRole} @ {formData.prospectCompany || "Target Co."}</div>
         </div>
         <div className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center">
           <span className="w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></span>

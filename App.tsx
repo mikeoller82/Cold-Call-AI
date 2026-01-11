@@ -38,7 +38,7 @@ const App: React.FC = () => {
   const isValid = useCallback(() => {
     return (
       formData.callerName.trim() !== '' &&
-      formData.companyName.trim() !== '' &&
+      formData.callerCompany.trim() !== '' &&
       formData.targetIndustry.trim() !== '' &&
       formData.targetRole.trim() !== '' &&
       formData.painPoint.trim() !== '' &&

@@ -2,6 +2,30 @@ import { GoogleGenAI, SchemaType, Type } from "@google/genai";
 import { ScriptFormData, ScriptAnalysisResult } from "../types";
 
 const buildPrompt = (data: ScriptFormData): string => {
+  // We incorporate the pre-filled prospectContext if available
+  const contextInstruction = data.prospectContext 
+    ? `**SPECIFIC CONTEXT FOUND**: "${data.prospectContext}". USE THIS IN THE HOOK.` 
+    : `Perform a live Google Search for '${data.prospectCompany}' to find recent news (expansions, hiring, earnings) to use as a hook.`;
+
+  // Determine length instructions
+  const lengthInstruction = data.scriptLength?.includes("Short")
+    ? "EXTREME BREVITY. Cut all fluff. Get to the point immediately. Focus on the hook and the ask. Target ~100-150 words."
+    : data.scriptLength?.includes("Long")
+    ? "DETAILED & CONVERSATIONAL. You have more time to build rapport, explain the context fully, and provide more social proof details. Target ~250+ words."
+    : "BALANCED. Standard cold call pacing. Target ~180-200 words.";
+
+  // Determine Objective Instructions
+  let objectiveSpecifics = "";
+  if (data.callObjective.includes("Fit Call")) {
+    objectiveSpecifics = "GOAL: Low friction. Do NOT ask for a meeting yet. Just ask if they are open to discussing this to see if there is a fit. The 'Ask' should be soft (e.g., 'Does it make sense to keep talking?').";
+  } else if (data.callObjective.includes("Demo")) {
+    objectiveSpecifics = "GOAL: Sell the VISUAL. You cannot solve the problem on the phone. You need to show them. The 'Ask' must be for a brief time to SHOW them the platform.";
+  } else if (data.callObjective.includes("Referral")) {
+    objectiveSpecifics = "GOAL: Navigation. Assume you might be talking to the wrong person. The 'Ask' is 'Who handles [pain point]?' or 'Are you the best person to speak with regarding X?'";
+  } else {
+    objectiveSpecifics = "GOAL: High-level Consult. Position yourself as an expert advisor. The 'Ask' is for a strategy session to audit their current process.";
+  }
+
   return `
 You are an elite Sales Strategist & Copywriter (Challenger Sale, Chris Voss, Jeremy Miner, Alex Hormozi).
 Your goal is to write a **High-Probability, Non-Generic Cold Call Script**.
@@ -13,27 +37,31 @@ Your goal is to write a **High-Probability, Non-Generic Cold Call Script**.
 4. **FORMATTING**: Use '>' for dialogue. Use [ ] for tonal instructions.
 
 *** INPUT DATA ***
-- **Caller**: ${data.callerName}, ${data.callerTitle} at ${data.companyName}
-- **Prospect**: ${data.targetRole} ${data.prospectCompanyName ? `at ${data.prospectCompanyName}` : ''}
+- **Caller**: ${data.callerName}, ${data.callerTitle} at ${data.callerCompany}
+- **Prospect**: ${data.targetRole} ${data.prospectCompany ? `at ${data.prospectCompany}` : ''}
 - **Industry**: ${data.targetIndustry}
+- **Prospect Context/News**: ${data.prospectContext || "To be researched"}
 - **Pain Point**: ${data.painPoint}
 - **Solution**: ${data.solution}
 - **Value Prop**: ${data.valueProposition}
 - **Tone**: ${data.tone}
+- **Target Length**: ${data.scriptLength}
 
-*** RESEARCH CONTEXT ***
-You have access to Google Search. You MUST perform a live search for '${data.prospectCompanyName}' (and '${data.prospectWebsite}' if provided) to find recent news, initiatives, hiring sprees, or financial reports.
-- **MANDATORY**: Incorporate a *specific* real-world finding (e.g., "I saw you just opened a new facility in Austin") into the "Context Hook".
-- If no specific company news is found, search for recent trends in the ${data.targetIndustry} industry and reference those.
+*** RESEARCH INSTRUCTIONS ***
+${contextInstruction}
+If no specific company news is found, use recent trends in the ${data.targetIndustry} industry.
 
 *** SCRIPT ARCHITECTURE ***
+
+**CONSTRAINT 1 (Length): ${lengthInstruction}**
+**CONSTRAINT 2 (Objective): ${objectiveSpecifics}**
 
 1. **THE OPENER (The "Permission to Reject")**
    - Do not ask "How are you?".
    - Use a pattern interrupt like: "I'll be upfront, this is a cold call, you can hang up or give me 30 seconds." OR "I know I'm an interruption, can I steal 27 seconds to tell you why I called?"
 
 2. **THE CONTEXT HOOK (Relevance > Personalization)**
-   - Connect specifically to the research you found above.
+   - Connect specifically to the ${data.prospectContext ? "provided Context" : "research you found"}.
    - Example format: "I saw you guys are [Action/News], usually that means [Problem/Pain]."
 
 3. **THE PROBLEM PITCH (Gap Selling)**
@@ -49,10 +77,10 @@ You have access to Google Search. You MUST perform a live search for '${data.pro
    - Provide a 1-sentence response to "I'm busy" or "Send me an email".
    - Tactic: Agree, then pivot. "That's exactly why I called. I don't want to waste time on a call if this isn't a fit. Just one question..."
 
-6. **HIGH CLOSING TACTICS (Provide THREE Distinct Options)**
-   - **Option A (The Assumptive Close)**: Treat the meeting as the natural next step. "It sounds like this addresses the bottleneck we discussed. Let's grab 15 minutes on Tuesday to walk through the implementation—does morning or afternoon work better for you?"
-   - **Option B (The Scarcity Close)**: Create natural urgency without being pushy. "My calendar for [Industry] consultations is pretty packed next week, but I have a window on Wednesday and one on Friday. Do you want to lock in the Wednesday slot before it's gone?"
-   - **Option C (The Summary Close)**: Recap the specific value before the ask. "If we can truly [Value Prop] and solve [Pain Point] as I described, does it make sense to invest 15 minutes next week to validate this, or should I leave you be?"
+6. **HIGH CLOSING TACTICS (Provide THREE Distinct Options based on Objective)**
+   - **Option A (The Standard Close)**: A direct ask aligned with: "${data.callObjective}".
+   - **Option B (The Soft/Negative Close)**: "Maybe this isn't a priority right now?" (Let them chase you).
+   - **Option C (The Alternative Close)**: "Do you have time Tuesday, or is Thursday better to [Specific Action]?"
 
 Write the script now. Keep it punchy, rhythmic, and designed for ${data.tone} delivery.
 `;
@@ -117,7 +145,7 @@ export const improveScript = async (
       *** CONTEXT ***
       - Caller: ${formData.callerName}
       - Prospect Role: ${formData.targetRole}
-      - Company: ${formData.companyName}
+      - Company: ${formData.callerCompany}
       - Tone: ${formData.tone}
       
       *** OUTPUT FORMAT ***
@@ -142,28 +170,57 @@ export const improveScript = async (
   }
 };
 
-export const analyzeBusinessUrl = async (target: string): Promise<Partial<ScriptFormData>> => {
+// Interface for what we get back from Gemini analysis
+interface CompanyAnalysisResponse {
+  painPoint?: string;
+  solution?: string;
+  valueProposition?: string;
+  socialProof?: string;
+  prospectContext?: string;
+}
+
+export const analyzeCompany = async (target: string, type: 'caller' | 'prospect'): Promise<CompanyAnalysisResponse> => {
   try {
     const apiKey = process.env.API_KEY;
     if (!apiKey) throw new Error("API Key is missing.");
 
     const ai = new GoogleGenAI({ apiKey });
     
+    let specificInstructions = "";
+    let requiredFields: string[] = [];
+
+    if (type === 'caller') {
+      specificInstructions = `
+        *** MODE: ANALYZE CALLER (SELLER) ***
+        Identify what this company SELLS aggressively.
+        1. **Solution**: Extract the core Product Name or Service Category (e.g., "Cloud ERP", "Cybersecurity Audit").
+        2. **Value Proposition**: Extract HARD METRICS. Look for %, $, or time savings (e.g., "Reduce spend by 30%"). If no specific metrics found, infer a strong benefit.
+        3. **Social Proof**: List 2-3 specific client names (e.g., "Google, Amazon") or "Fortune 500 companies".
+        4. **Pain Point**: What generic problem do they solve? (e.g., "Data breaches", "Inefficient hiring").
+      `;
+      requiredFields = ["solution", "valueProposition"];
+    } else {
+      specificInstructions = `
+        *** MODE: ANALYZE PROSPECT (BUYER) ***
+        Identify what this company DOES and their likely CHALLENGES.
+        1. **Pain Point**: Infer a major, specific strategic challenge they face based on their industry and recent news (e.g., "Supply chain volatility due to expansion", "Compliance risks in new markets").
+        2. **Prospect Context**: Find RECENT NEWS (last 12 months). Look for: Funding, Expansion, New Hires, New Products, or Earnings Reports. Summary in 1 short sentence. (e.g., "Just raised Series B", "Opened new HQ in Texas").
+        3. **Solution**: (Optional) What do they do?
+        4. **Value Proposition**: (Optional) What is their mission?
+      `;
+      requiredFields = ["painPoint", "prospectContext"];
+    }
+
     const prompt = `
       TARGET: ${target}
-
-      You are a specialized B2B Researcher and Analyst.
       
-      TASK: Perform a live search on the specific TARGET (which may be a URL or a Company Name) to extract aggressive sales messaging.
+      You are a specialized B2B Researcher and Data Miner.
+      TASK: Perform a live search on the TARGET (URL or Name) and extract high-value sales insights.
       
-      INSTRUCTIONS:
-      1. **VERIFY TARGET**: If the input is a URL, visit it. If it is a Company Name, Google it to find their main website and "vs competitors" or "case studies" pages.
-      2. **SEARCH COMMANDS**: Search for case studies, pricing pages, and "vs competitors" pages.
-      3. **EXTRACTION**:
-         - **Pain Point**: Find the most expensive problem they solve for THEIR customers.
-         - **Solution**: Their Product name or core service.
-         - **Value Proposition**: Find specific metrics they promise (ROI, hours saved, % growth).
-         - **Social Proof**: Big name clients they work with.
+      ${specificInstructions}
+      
+      NOTE: Handle unstructured websites by summarizing the "About Us" or "Services" page if direct claims aren't found.
+      PRIORITIZE: Quantifiable numbers (ROI, savings, revenue) over generic buzzwords.
 
       Return JSON.
     `;
@@ -180,8 +237,9 @@ export const analyzeBusinessUrl = async (target: string): Promise<Partial<Script
             solution: { type: Type.STRING },
             valueProposition: { type: Type.STRING },
             socialProof: { type: Type.STRING },
+            prospectContext: { type: Type.STRING },
           },
-          required: ["painPoint", "solution", "valueProposition"]
+          required: requiredFields
         },
         tools: [{googleSearch: {}}], 
       }
@@ -192,7 +250,7 @@ export const analyzeBusinessUrl = async (target: string): Promise<Partial<Script
     
     return JSON.parse(text);
   } catch (error) {
-    console.error("Error analyzing business URL:", error);
+    console.error(`Error analyzing ${type}:`, error);
     throw error;
   }
 };
@@ -256,7 +314,7 @@ export const getPracticeResponse = async (
     
     const systemInstruction = `
       You are roleplaying as a TOUGH prospect in the ${formData.targetIndustry} industry.
-      Role: ${formData.targetRole} at ${formData.prospectCompanyName || "a company"}.
+      Role: ${formData.targetRole} at ${formData.prospectCompany || "a company"}.
       
       Personality:
       - You are busy and skeptical.
@@ -265,6 +323,7 @@ export const getPracticeResponse = async (
       - If the user uses a "Pattern Interrupt" or "Negative Reverse", respond with intrigue.
       
       Current Pain: ${formData.painPoint}.
+      Context: ${formData.prospectContext || "Standard business day."}
       
       Goal: Only agree to a meeting if they prove specific value or specific insight into your industry.
     `;

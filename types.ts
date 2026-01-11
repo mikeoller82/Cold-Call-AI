@@ -6,10 +6,10 @@ export enum CompanySize {
 }
 
 export enum CallObjective {
-  DISCOVERY = "Discovery Call",
-  SCHEDULE_DEMO = "Schedule Demo",
-  BOOK_MEETING = "Book Meeting",
-  QUALIFY_LEAD = "Qualify Lead"
+  DISCOVERY = "5-Min Fit Call (Low Friction)",
+  DEMO = "Schedule Product Demo (Visual)",
+  STRATEGY = "Strategic Consult (High Value)",
+  REFERRAL = "Internal Referral (Navigation)"
 }
 
 export enum Tone {
@@ -19,22 +19,30 @@ export enum Tone {
   DIRECT_CONCISE = "Direct & Concise"
 }
 
+export enum ScriptLength {
+  SHORT = "Short (30-60 sec)",
+  MEDIUM = "Medium (60-90 sec)",
+  LONG = "Long (90+ sec)"
+}
+
 export interface ScriptFormData {
   callerName: string;
   callerTitle: string;
-  companyName: string;
-  callerWebsite?: string; // New field
+  callerCompany: string;
+  callerWebsite?: string;
   targetIndustry: string;
   targetRole: string;
-  prospectCompanyName?: string; // New field
-  prospectWebsite?: string; // New field
+  prospectCompany?: string;
+  prospectWebsite?: string;
   companySize: CompanySize | string;
-  painPoint: string;
-  solution: string;
-  valueProposition: string;
-  socialProof: string;
+  painPoint: string; // Specific pain point for the prospect
+  prospectContext?: string; // New: Recent news or findings about the prospect
+  solution: string; // Caller's solution
+  valueProposition: string; // Caller's value prop
+  socialProof: string; // Caller's social proof
   callObjective: CallObjective | string;
   tone: Tone | string;
+  scriptLength: ScriptLength | string;
 }
 
 export interface GeneratedScript {
