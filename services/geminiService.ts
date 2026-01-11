@@ -35,6 +35,7 @@ Your goal is to write a **High-Probability, Non-Generic Cold Call Script**.
 2. **PEER-TO-PEER TONE**: Write as an industry consultant, not a subservient salesperson.
 3. **SPECIFICITY**: If the input data is vague, INFER specific industry pains/metrics based on the '${data.targetIndustry}' industry. Do not leave generic "[Insert Metric]" placeholders unless absolutely necessary.
 4. **FORMATTING**: Use '>' for dialogue. Use [ ] for tonal instructions.
+5. **MICRO-COMMITMENTS**: The script MUST be a dialogue, not a monologue. Integrate "Tie-Down" questions (e.g., "Does that sound like your world?", "Fair enough?") to get small "Yes" agreements before moving to the next step.
 
 *** INPUT DATA ***
 - **Caller**: ${data.callerName}, ${data.callerTitle} at ${data.callerCompany}
@@ -59,6 +60,7 @@ If no specific company news is found, use recent trends in the ${data.targetIndu
 1. **THE OPENER (The "Permission to Reject")**
    - Do not ask "How are you?".
    - Use a pattern interrupt like: "I'll be upfront, this is a cold call, you can hang up or give me 30 seconds." OR "I know I'm an interruption, can I steal 27 seconds to tell you why I called?"
+   - *Micro-Commitment*: Wait for them to say "Go ahead" or "Sure".
 
 2. **THE CONTEXT HOOK (Relevance > Personalization)**
    - Connect specifically to the ${data.prospectContext ? "provided Context" : "research you found"}.
@@ -68,14 +70,30 @@ If no specific company news is found, use recent trends in the ${data.targetIndu
    - Don't pitch the product. Pitch the *problem* they likely have.
    - Focus on the "Cost of Inaction" regarding ${data.painPoint}.
    - Use "Challenger" language: "Most ${data.targetRole}s I talk to are struggling with X..."
+   - **MANDATORY**: End this section with a *Micro-Commitment Question* to validate the pain (e.g., "Is that a challenge you're facing currently?" or "Does that resonate?").
 
 4. **THE SOLUTION BRIDGE**
    - Briefly mention ${data.solution} as the mechanism, but focus on the *Outcome* (${data.valueProposition}).
    - *Social Proof Drop*: Mention ${data.socialProof} casually ("It's how we helped [Company] do X").
+   - **MANDATORY**: Include a resonance check: "See how that would shift the [Metric]?" or "Does that align with your goals?"
 
-5. **OBJECTION HANDLING (The "Push-Pull")**
-   - Provide a 1-sentence response to "I'm busy" or "Send me an email".
-   - Tactic: Agree, then pivot. "That's exactly why I called. I don't want to waste time on a call if this isn't a fit. Just one question..."
+5. **ELITE OBJECTION HANDLING (The "Unrefusable" Responses)**
+   Use high-status, psychological verbal judo inspired by Jordan Belfort (Straight Line), Alex Hormozi (Value Equation), and Grant Cardone (Agreement).
+
+   - **Scenario A: "I'm not interested" (The "Reasonable Man" Loop)**
+     - *Concept*: "Not interested" means "I don't understand the value yet."
+     - *Tactic*: Agree, Deflect, then offer a "No-Brainer" Outcome.
+     - *Scripting*: "I wouldn't expect you to be. You don't know who I am yet. But if I told you I could help you [Specific Benefit] in the next 30 days, you'd at least be *curious* how I do it, right? Everyone likes [Benefit]."
+
+   - **Scenario B: "Send me some information" (The "Information Trap")**
+     - *Concept*: Do not accept the brush-off. Force a micro-commitment to read it.
+     - *Tactic*: The "Anti-Spam" Filter. Make the email conditional to avoid the trash bin.
+     - *Scripting*: "I can definitely do that. But our documentation is 40 pages long. To make sure I don't waste your time with irrelevant junk, are you currently trying to fix [Problem A] or [Problem B]? Tell me that, and I'll send only what matters."
+
+   - **Scenario C: "I'm busy / Call me later" (The "Radical Candor" Interrupt)**
+     - *Concept*: Acknowledge status. Busy people are decision makers.
+     - *Tactic*: The "30-Second Timer" (Cardone/Voss Agreement).
+     - *Scripting*: "I know, that's why I'm calling you. Successful people are always busy. Give me 27 seconds to explain why I called. If it’s not relevant, you can hang up. Fair?"
 
 6. **HIGH CLOSING TACTICS (Provide THREE Distinct Options based on Objective)**
    - **Option A (The Standard Close)**: A direct ask aligned with: "${data.callObjective}".
@@ -135,6 +153,7 @@ export const improveScript = async (
       - Remove any "wimpy" language (e.g., "I'd love to", "If you have time").
       - Use high-status, peer-to-peer language.
       - Ensure closing tactics are **Assumptive**, **Summary-based**, or utilize **Natural Scarcity**.
+      - **MICRO-COMMITMENTS**: Ensure the script includes small "yes" questions (tie-downs) to build momentum.
       
       *** ORIGINAL SCRIPT ***
       ${originalScript}
